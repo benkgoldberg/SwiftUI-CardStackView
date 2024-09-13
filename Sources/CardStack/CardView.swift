@@ -6,18 +6,21 @@ struct CardView<Direction, Content: View>: View {
 
   private let direction: (Double) -> Direction?
   private let isOnTop: Bool
-  private let onSwipe: (Direction) -> Void
+  private let onSwipeEnded: (Direction) -> Void
+  private let onSwipeChanged: (Direction, CGSize) -> Void
   private let content: (Direction?) -> Content
 
   init(
     direction: @escaping (Double) -> Direction?,
     isOnTop: Bool,
-    onSwipe: @escaping (Direction) -> Void,
+    onSwipeEnded: @escaping (Direction) -> Void,
+    onSwipeChanged: @escaping (Direction, CGSize) -> Void,
     @ViewBuilder content: @escaping (Direction?) -> Content
   ) {
     self.direction = direction
     self.isOnTop = isOnTop
-    self.onSwipe = onSwipe
+    self.onSwipeEnded = onSwipeEnded
+    self.onSwipeChanged = onSwipeChanged
     self.content = content
   }
 
@@ -35,12 +38,14 @@ struct CardView<Direction, Content: View>: View {
     DragGesture()
       .onChanged { value in
         self.translation = value.translation
-        print("SWIPE TRANSLATION: \(translation)")
+          if let direction = self.swipeDirection(geometry, useThreshold: false) {
+            self.onSwipeChanged(direction, translation)
+          }
       }
       .onEnded { value in
         self.translation = value.translation
         if let direction = self.swipeDirection(geometry) {
-          withAnimation(self.configuration.animation) { self.onSwipe(direction) }
+          withAnimation(self.configuration.animation) { self.onSwipeEnded(direction) }
         } else {
           withAnimation { self.translation = .zero }
         }
@@ -59,11 +64,16 @@ struct CardView<Direction, Content: View>: View {
     )
   }
 
-  private func swipeDirection(_ geometry: GeometryProxy) -> Direction? {
+  private func swipeDirection(_ geometry: GeometryProxy, useThreshold: Bool = true) -> Direction? {
     guard let direction = direction(degree) else { return nil }
     let threshold = min(geometry.size.width, geometry.size.height) * configuration.swipeThreshold
     let distance = hypot(translation.width, translation.height)
-    return distance > threshold ? direction : nil
+    
+    if useThreshold {
+      return distance > threshold ? direction : nil
+    } else {
+      return direction
+    }
   }
 
   private var transition: AnyTransition {
