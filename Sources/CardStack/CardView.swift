@@ -35,6 +35,7 @@ struct CardView<Direction, Content: View>: View {
     DragGesture()
       .onChanged { value in
         self.translation = value.translation
+        print("SWIPE TRANSLATION: \(translation)")
       }
       .onEnded { value in
         self.translation = value.translation
