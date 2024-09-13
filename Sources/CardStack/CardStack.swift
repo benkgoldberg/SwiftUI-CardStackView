@@ -50,7 +50,11 @@ where Data.Index: Hashable {
       isOnTop: relativeIndex == 0,
       onSwipeEnded: { direction in
         self.onSwipeEnded(self.data[index], direction)
-        self.currentIndex = self.data.index(after: index)
+        
+        // Only increase the index if the card was successfully swiped
+        if direction != nil {
+            self.currentIndex = self.data.index(after: index)
+        }
       },
       onSwipeChanged: { direction in
         self.onSwipeChanged?(self.data[index], direction)
