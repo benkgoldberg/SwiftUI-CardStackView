@@ -9,20 +9,23 @@ where Data.Index: Hashable {
   private let direction: (Double) -> Direction?
   private let data: Data
   private let id: KeyPath<Data.Element, ID>
-  private let onSwipe: (Data.Element, Direction) -> Void
+  private let onSwipeEnded: (Data.Element, Direction?) -> Void
+  private let onSwipeChanged: ((Data.Element, Direction) -> Void)?
   private let content: (Data.Element, Direction?, Bool) -> Content
 
   public init(
     direction: @escaping (Double) -> Direction?,
     data: Data,
     id: KeyPath<Data.Element, ID>,
-    onSwipe: @escaping (Data.Element, Direction) -> Void,
+    onSwipeEnded: @escaping (Data.Element, Direction?) -> Void,
+    onSwipeChanged: ((Data.Element, Direction) -> Void)? = nil,
     @ViewBuilder content: @escaping (Data.Element, Direction?, Bool) -> Content
   ) {
     self.direction = direction
     self.data = data
     self.id = id
-    self.onSwipe = onSwipe
+    self.onSwipeEnded = onSwipeEnded
+    self.onSwipeChanged = onSwipeChanged
     self.content = content
 
     self._currentIndex = State<Data.Index>(initialValue: data.startIndex)
@@ -45,9 +48,12 @@ where Data.Index: Hashable {
     CardView(
       direction: direction,
       isOnTop: relativeIndex == 0,
-      onSwipe: { direction in
-        self.onSwipe(self.data[index], direction)
+      onSwipeEnded: { direction in
+        self.onSwipeEnded(self.data[index], direction)
         self.currentIndex = self.data.index(after: index)
+      },
+      onSwipeChanged: { direction in
+        self.onSwipeChanged?(self.data[index], direction)
       },
       content: { direction in
         self.content(self.data[index], direction, relativeIndex == 0)
@@ -70,14 +76,16 @@ extension CardStack where Data.Element: Identifiable, ID == Data.Element.ID {
   public init(
     direction: @escaping (Double) -> Direction?,
     data: Data,
-    onSwipe: @escaping (Data.Element, Direction) -> Void,
+    onSwipeEnded: @escaping (Data.Element, Direction?) -> Void,
+    onSwipeChanged: ((Data.Element, Direction) -> Void)? = nil,
     @ViewBuilder content: @escaping (Data.Element, Direction?, Bool) -> Content
   ) {
     self.init(
       direction: direction,
       data: data,
       id: \Data.Element.id,
-      onSwipe: onSwipe,
+      onSwipeEnded: onSwipeEnded,
+      onSwipeChanged: onSwipeChanged,
       content: content
     )
   }
@@ -89,14 +97,16 @@ extension CardStack where Data.Element: Hashable, ID == Data.Element {
   public init(
     direction: @escaping (Double) -> Direction?,
     data: Data,
-    onSwipe: @escaping (Data.Element, Direction) -> Void,
+    onSwipeEnded: @escaping (Data.Element, Direction?) -> Void,
+    onSwipeChanged: ((Data.Element, Direction) -> Void)? = nil,
     @ViewBuilder content: @escaping (Data.Element, Direction?, Bool) -> Content
   ) {
     self.init(
       direction: direction,
       data: data,
       id: \Data.Element.self,
-      onSwipe: onSwipe,
+      onSwipeEnded: onSwipeEnded,
+      onSwipeChanged: onSwipeChanged,
       content: content
     )
   }

@@ -6,14 +6,14 @@ struct CardView<Direction, Content: View>: View {
 
   private let direction: (Double) -> Direction?
   private let isOnTop: Bool
-  private let onSwipeEnded: (Direction) -> Void
+  private let onSwipeEnded: (Direction?) -> Void
   private let onSwipeChanged: (Direction) -> Void
   private let content: (Direction?) -> Content
 
   init(
     direction: @escaping (Double) -> Direction?,
     isOnTop: Bool,
-    onSwipeEnded: @escaping (Direction) -> Void,
+    onSwipeEnded: @escaping (Direction?) -> Void,
     onSwipeChanged: @escaping (Direction) -> Void,
     @ViewBuilder content: @escaping (Direction?) -> Content
   ) {
@@ -45,9 +45,11 @@ struct CardView<Direction, Content: View>: View {
       }
       .onEnded { value in
         self.translation = value.translation
-        if let direction = self.swipeDirection(geometry) {
-          withAnimation(self.configuration.animation) { self.onSwipeEnded(direction) }
-        } else {
+        let direction = self.swipeDirection(geometry)
+          
+        withAnimation(self.configuration.animation) { self.onSwipeEnded(direction) }
+          
+        if direction == nil {
           withAnimation { self.translation = .zero }
         }
       }
