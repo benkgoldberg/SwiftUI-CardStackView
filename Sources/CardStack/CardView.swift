@@ -9,6 +9,7 @@ struct CardView<Direction, Content: View>: View {
   private let onSwipeEnded: (Direction?) -> Void
   private let onSwipeChanged: (Direction) -> Void
   private let content: (Direction?) -> Content
+  private var clockwiseRotation: Bool = true
 
   init(
     direction: @escaping (Double) -> Direction?,
@@ -37,6 +38,9 @@ struct CardView<Direction, Content: View>: View {
   private func dragGesture(_ geometry: GeometryProxy) -> some Gesture {
     DragGesture()
       .onChanged { value in
+        if value.location.y < geometry.size.height / 2 {
+            clockwiseRotation = false
+        }
         self.translation = value.translation
           if let direction = self.swipeDirection(geometry, useThreshold: false) {
             print("TRANSLATION: \(translation)")
@@ -62,9 +66,11 @@ struct CardView<Direction, Content: View>: View {
   }
 
   private func rotation(_ geometry: GeometryProxy) -> Angle {
-    .degrees(
-      Double(translation.width / geometry.size.width) * 1
-    )
+    if clockwiseRotation {
+      return .degrees(Double(translation.width / geometry.size.width) * -10)
+    } else {
+      return .degrees(Double(translation.width / geometry.size.width) * 10)
+    }
   }
 
   private func swipeDirection(_ geometry: GeometryProxy, useThreshold: Bool = true) -> Direction? {
