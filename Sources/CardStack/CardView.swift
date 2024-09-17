@@ -9,7 +9,7 @@ struct CardView<Direction, Content: View>: View {
   private let onSwipeEnded: (Direction?) -> Void
   private let onSwipeChanged: (Direction) -> Void
   private let content: (Direction?) -> Content
-  private var clockwiseRotation: Bool = true
+  @State private var clockwiseRotation: Bool = true
 
   init(
     direction: @escaping (Double) -> Direction?,
