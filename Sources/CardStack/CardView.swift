@@ -63,7 +63,7 @@ struct CardView<Direction, Content: View>: View {
 
   private func rotation(_ geometry: GeometryProxy) -> Angle {
     .degrees(
-      Double(translation.width / geometry.size.width) * 25
+      Double(translation.width / geometry.size.width) * 1
     )
   }
 
