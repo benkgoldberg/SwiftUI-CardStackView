@@ -40,6 +40,8 @@ struct CardView<Direction, Content: View>: View {
       .onChanged { value in
         if value.location.y < geometry.size.height / 2 {
             clockwiseRotation = false
+        } else {
+            clockwiseRotation = true
         }
         self.translation = value.translation
           if let direction = self.swipeDirection(geometry, useThreshold: false) {
